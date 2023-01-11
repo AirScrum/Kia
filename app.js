@@ -1,7 +1,7 @@
 const express = require('express')
 const httpProxy = require('express-http-proxy')
 const app = express()
-
+const userStoriesData = require('./utils/constants').userStories;
 const port = 4000
 
 const userServiceProxy = httpProxy('http://localhost:3000/')
@@ -23,6 +23,20 @@ app.get('/request/speech2text', (req, res, next) => {
   userServiceProxy(req, res, next)
 })
 
+/**
+ * @author Shehab Adel
+ * @summary A prototype middleware to return static user stories
+ */
+app.post('/userstories',(req,res,next)=>{
+  try {
+    //TODO Delete this after prototype presentation lol
+    const userStories = JSON.parse(userStoriesData);
+    res.json({data:userStories}).status(200).send()
+  } catch (error) {
+    console.error(error)
+    res.status(500).end();
+  }
+})
 //Route request to the Processing service
 app.post('/request/process', (req, res, next) => {
   userServiceProxy2(req, res, next)
