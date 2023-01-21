@@ -30,8 +30,7 @@ app.get('/request/speech2text', (req, res, next) => {
 app.post('/userstories',(req,res,next)=>{
   try {
     //TODO Delete this after prototype presentation lol
-    const userStories = JSON.parse(userStoriesData);
-    res.json({data:userStories}).status(200).send()
+    res.json({data:userStoriesData}).status(200).send()
   } catch (error) {
     console.error(error)
     res.status(500).end();
