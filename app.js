@@ -7,6 +7,10 @@ const port = 4000
 const userServiceProxy = httpProxy('http://localhost:3000/')
 const userServiceProxy2 = httpProxy('http://localhost:8002/')
 
+var cors = require('cors')
+
+app.use(cors())
+
 // Authentication
 app.use((req, res, next) => {
   // TODO: my authentication logic
@@ -30,7 +34,7 @@ app.get('/request/speech2text', (req, res, next) => {
 app.post('/userstories',(req,res,next)=>{
   try {
     //TODO Delete this after prototype presentation lol
-    res.json({data:userStoriesData}).status(200).send()
+    res.json({data:userStoriesData}).status(200).send();
   } catch (error) {
     console.error(error)
     res.status(500).end();
