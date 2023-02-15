@@ -5,7 +5,7 @@ const UserModel = require('../models/user');
 const passport = require('passport')
 
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = 'Airscrum Secret String';
+opts.secretOrKey = process.env.SECRET_STRING;
 
 passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
     UserModel.findOne({ id: jwt_payload.id }, function (err, user) {
