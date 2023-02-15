@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(express.json())
 
+// To make app routes on users to user.router.js
 require('./resources/User/user.router')(app);
 
 //To connect to database
