@@ -31,9 +31,10 @@ app.get('/request/speech2text', (req, res, next) => {
  * @author Shehab Adel
  * @summary A prototype middleware to return static user stories
  */
-app.post('/userstories',(req,res,next)=>{
+app.post('/userstories',async (req,res,next)=>{
   try {
     //TODO Delete this after prototype presentation lol
+    await new Promise(resolve => setTimeout(resolve, 10000));
     res.json({data:userStoriesData}).status(200).send();
   } catch (error) {
     console.error(error)
