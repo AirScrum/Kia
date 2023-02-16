@@ -6,11 +6,15 @@ const jwt = require('jsonwebtoken');
 // Function to register
 const register = (req, res) => {
 
+  /**
+   * Validation on data
+   */
     // Make a new instance of user schema
     const user = new UserModel({
         fullName: req.body.fullName,
         email: req.body.email,
         password: hashSync(req.body.password, 10),
+        birthDate: req.body.birthDate
     });
 
     // Save instance to mongoDB
@@ -36,6 +40,10 @@ const register = (req, res) => {
 
 // Function to login
 const login = (req, res) => {
+
+  /**
+   * Validation on data
+   */
     
     // Check whether the credentials entered matches the data in the database or not to verify users
     UserModel.findOne({ email: req.body.email }).then((user) => {
