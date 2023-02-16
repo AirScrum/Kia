@@ -8,6 +8,7 @@ const register = (req, res) => {
 
     // Make a new instance of user schema
     const user = new UserModel({
+        fullName: req.body.fullName,
         email: req.body.email,
         password: hashSync(req.body.password, 10),
     });
