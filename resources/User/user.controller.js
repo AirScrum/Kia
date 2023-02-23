@@ -57,7 +57,6 @@ const login = (req, res) => {
 
         // User matched
         const payload = {
-          email: user.email,
           id: user._id,
         };
         

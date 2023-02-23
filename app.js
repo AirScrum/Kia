@@ -7,6 +7,7 @@ var axios = require("axios").default;
 const dotenv=require('dotenv').config();
 const userStoriesData = require('./utils/constants').userStories;
 const passport = require('passport');
+const session = require('express-session');
 
 // Instances
 const app = express()
@@ -14,13 +15,16 @@ const userServiceProxy = httpProxy('http://localhost:3000/')
 const userServiceProxy2 = httpProxy('http://localhost:8002/')
 
 // Middlewares
+app.use(session({ secret: process.env.EXPRESS_SECRET }));
 app.use(cors())
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.json())
 
-// To make app routes on users to user.router.js
+// To make app routes on users to user.router.js and user-google.router.js
 require('./resources/User/user.router')(app);
+require('./resources/User-google/user-google.router')(app);
 
 //To connect to database
 const dbURI=process.env.MONGO_DB_URI;

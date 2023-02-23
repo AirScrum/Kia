@@ -17,6 +17,6 @@ module.exports = function (app) {
   app.post("/login", login);
 
   // Example of protected routes
-  app.get("/protected",passport.authenticate("jwt", { session: false }), protected);
+  app.get("/protected", passport.authenticate("jwt", { session: false }), protected);
   
 };
