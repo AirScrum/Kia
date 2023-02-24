@@ -25,7 +25,6 @@ passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
                 if (user) {
                     return done(null, user);
                 } else {
-                    console.log("aa")
                     return done(null, false);
                 }
             });

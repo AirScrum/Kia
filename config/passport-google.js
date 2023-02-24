@@ -17,8 +17,7 @@ passport.use(
         },
 
         function (accessToken, refreshToken, profile, cb) {
-            console.log("Function login");
-            console.log(accessToken, profile);
+            //console.log(accessToken, profile);
             UserModel.findOne({ googleId: profile.id }, (err, user) => {
                 if (err) return cb(err, null);
                 if (!user) {
@@ -36,23 +35,6 @@ passport.use(
         }
     )
 );
-
-/*passport.use(
-    new JwtStrategy(opts, function (jwt_payload, done) {
-        console.log("From google JWT")
-        console.log(jwt_payload);
-        UserModel.findById(jwt_payload.id, function (err, user) {
-            if (err) {
-                return done(err, false);
-            }
-            if (user) {
-                return done(null, user);
-            } else {
-                return done(null, false);
-            }
-        });
-    })
-)*/
 
 //Persists user data inside session
 passport.serializeUser(function (user, done) {
