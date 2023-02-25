@@ -22,9 +22,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.json())
 
-// To make app routes on users to user.router.js and user-google.router.js
+// To make app routes on users to user.router.js and GoogleAuth.router.js
 require('./resources/User/user.router')(app);
-require('./resources/User-google/user-google.router')(app);
+require('./resources/GoogleAuth/GoogleAuth.router')(app);
 
 //To connect to database
 const dbURI=process.env.MONGO_DB_URI;

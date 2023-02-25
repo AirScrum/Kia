@@ -2,7 +2,7 @@ const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const opts = {}
 const UserModel = require('../resources/User/user.model');
-const UserGoogleModel = require("../resources/User-google/user-google.model");
+const UserGoogleModel = require("../resources/GoogleAuth/GoogleAuth.model");
 const passport = require('passport')
 
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();

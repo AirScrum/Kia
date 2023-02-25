@@ -1,11 +1,6 @@
 const passport = require("passport");
-const UserModel = require("../resources/User-google/user-google.model");
+const UserModel = require("../resources/GoogleAuth/GoogleAuth.model");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
-const opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = process.env.SECRET_STRING;
 
 
 passport.use(

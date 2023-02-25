@@ -1,6 +1,6 @@
 const passport = require("passport");
 var myPassportService = require("../../config/passport-google");
-const { authenticate } = require('./user-google.controller')
+const { authenticate } = require('./GoogleAuth.controller')
 
 module.exports = function (app) {
 
