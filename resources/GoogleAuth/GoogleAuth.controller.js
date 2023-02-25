@@ -9,9 +9,9 @@ const authenticate = (req, res) => {
         { expiresIn: "10h" },
         (err, token) => {
             if (err) {
-                res.redirect(`http://localhost:3000/`)
+                res.redirect(process.env.CLIENT_URL)
             }
-            res.redirect(`http://localhost:3000/?token=` + token)
+            res.redirect(process.env.CLIENT_URL+ '?token=' + token)
         }
     );
     
