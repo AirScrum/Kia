@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 
 // Function to authenticate
 const authenticate = (req, res) => {
-    console.log(req.user)
     jwt.sign(
         { id: req.user.id },
         process.env.SECRET_STRING,

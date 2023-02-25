@@ -1,5 +1,5 @@
 const passport = require("passport");
-const UserModel = require("../resources/GoogleAuth/GoogleAuth.model");
+const UserModel = require('../resources/User/user.model');
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 
@@ -12,13 +12,15 @@ passport.use(
         },
 
         function (accessToken, refreshToken, profile, cb) {
-            //console.log(accessToken, profile);
-            UserModel.findOne({ googleId: profile.id }, (err, user) => {
+            
+            // Todo: Check first if googleId matches, then check if email matches
+            UserModel.findOne({ googleId: profile.id, email: profile.emails[0].value }, (err, user) => {
                 if (err) return cb(err, null);
                 if (!user) {
                     let newUser = new UserModel({
                         googleId: profile.id,
-                        name: profile.displayName,
+                        fullName: profile.displayName,
+                        email: profile.emails[0].value
                     });
 
                     newUser.save();

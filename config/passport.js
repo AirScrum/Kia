@@ -2,13 +2,14 @@ const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const opts = {}
 const UserModel = require('../resources/User/user.model');
-const UserGoogleModel = require("../resources/GoogleAuth/GoogleAuth.model");
 const passport = require('passport')
 
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.SECRET_STRING;
 
 passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
+
+    // Check that this user has no google account
     UserModel.findById(jwt_payload.id, function (err, user) {
         
         if (err) {
@@ -17,17 +18,7 @@ passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
         if (user) {
             return done(null, user);
         } else {
-            UserGoogleModel.findById(jwt_payload.id, function (err, user) {
-        
-                if (err) {
-                    return done(err, false);
-                }
-                if (user) {
-                    return done(null, user);
-                } else {
-                    return done(null, false);
-                }
-            });
+            return done(null, false);
         }
     });
 }));
