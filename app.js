@@ -3,9 +3,7 @@ const express = require("express");
 const httpProxy = require("express-http-proxy");
 var cors = require("cors");
 const mongoose = require("mongoose");
-var axios = require("axios").default;
 const dotenv = require("dotenv").config();
-const userStoriesData = require("./utils/constants").userStories;
 const passport = require("passport");
 const session = require("express-session");
 
@@ -56,21 +54,6 @@ app.get("/", (req, res, next) => {
 //Route the request to the Speech2Text service
 app.get("/request/speech2text", (req, res, next) => {
   userServiceProxy(req, res, next);
-});
-
-/**
- * @author Shehab Adel
- * @summary A prototype middleware to return static user stories
- */
-app.post("/userstories", async (req, res, next) => {
-  try {
-    //TODO Delete this after prototype presentation lol
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-    res.json({ data: userStoriesData }).status(200).send();
-  } catch (error) {
-    console.error(error);
-    res.status(500).end();
-  }
 });
 
 //Route request to the Processing service

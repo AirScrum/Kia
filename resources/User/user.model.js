@@ -1,43 +1,65 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-
-const userSchema = new Schema({
+const bcrypt = require("bcrypt");
+const userSchema = new Schema(
+  {
     fullName: {
-        type: String,
-        required: true,
-        },
+      type: String,
+      required: true,
+    },
     email: {
-        type: String,
-        required: true,
-        },
+      type: String,
+      required: true,
+    },
     password: {
-        type: String,
-        },
+      type: String,
+      required: true,
+    },
     googleId: {
-        type: String,
+      type: String,
     },
     birthDate: {
-        type: String,
-        },
+      type: String,
+    },
     phoneNo: {
-        type: String,
-        },
+      type: String,
+    },
     gender: {
-        type: String,
-        },
+      type: String,
+    },
     title: {
-        type: String,
-        },
+      type: String,
+    },
     companyName: {
-        type: String,
-        },
+      type: String,
+    },
     address: {
-        type: String,
-        },
+      type: String,
+    },
     bio: {
-        type: String,
-        },
-}, { timestamps: true });
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
+userSchema.pre("save", (next) => {
+  bcrypt.hash(this.password, 8, (err, hash) => {
+    if (err) {
+      console.log(`Hash error ${err} with user ${this.username} `);
+      return next(err);
+    }
+    this.password = hash;
+    next();
+  });
+});
 
-const User = mongoose.model('User', userSchema);
+userSchema.methods.isValidPassword = async function (password) {
+  try {
+    return await bcrypt.compare(password, this.password);
+  } catch (error) {
+    throw error;
+  }
+};
+
+const User = mongoose.model("User", userSchema);
 module.exports = User;

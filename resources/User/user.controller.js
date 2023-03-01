@@ -1,86 +1,56 @@
 // Important requires
-const UserModel = require("./user.model");
-const { hashSync, compareSync } = require("bcrypt");
-const jwt = require("jsonwebtoken");
-
-// Function to register
-const register = (req, res) => {
-    /**
-     * Validation on data
-     */
-    // Make a new instance of user schema
-    const user = new UserModel({
-        fullName: req.body.fullName,
-        email: req.body.email,
-        password: hashSync(req.body.password, 10),
-        birthDate: req.body.birthDate,
+const User = require("./user.model");
+const createUser = async (req, res) => {
+  try {
+    const user = await User.create({ ...req.body });
+    if (!user) {
+      return res.status(400).end();
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error(error);
+  }
+};
+const getUser = () => async (req, res) => {
+  try {
+    const id = req.params.id;
+    const doc = await User.findOne({ _id: id }).lean().exec();
+    if (!doc) {
+      return res.status(404).end();
+    }
+    res.status(200).json({ data: doc });
+  } catch (e) {
+    console.error(e);
+    res.status(400).end();
+  }
+};
+const updateUser = () => async (req, res) => {
+  try {
+    const doc = await User.findOneAndUpdate({ _id: req.params.id }, req.body, {
+      new: true,
     });
-
-    // Save instance to mongoDB
-    user.save()
-        .then((user) => {
-            res.send({
-                success: true,
-                message: "User created successfully.",
-                user: {
-                    id: user._id,
-                    email: user.email,
-                },
-            });
-        })
-        .catch((err) => {
-            res.send({
-                success: false,
-                message: "Something went wrong",
-                error: err,
-            });
-        });
+    if (!doc) {
+      return res.status(400).end();
+    }
+    res.status(200).json({ data: doc });
+  } catch (e) {
+    console.error(e);
+    res.status(400).end();
+  }
 };
 
-// Function to login
-const login = (req, res) => {
-    /**
-     * Validation on data
-     */
-
-    // Check whether the credentials entered matches the data in the database or not to verify users
-    UserModel.findOne({ email: req.body.email }).then((user) => {
-        // No user found or incorrect password
-        if (!user || !compareSync(req.body.password, user.password)) {
-            return res.status(401).send({
-                success: false,
-                message: "Could not find the user",
-            });
-        }
-
-        // User matched
-        const payload = {
-            id: user._id,
-        };
-
-        // Generate a token
-        const token = jwt.sign(payload, process.env.SECRET_STRING, {
-            expiresIn: "10h",
-        });
-
-        // Send the token back to the user
-        return res.status(200).send({
-            success: true,
-            message: "Logged in successfully!",
-            token: "Bearer " + token,
-        });
-    });
+const removeUser = () => async (req, res) => {
+  try {
+    const doc = await User.findOneAndRemove({
+      _id: req.params.id,
+    }).exec();
+    if (!doc) {
+      return res.status(400).end();
+    }
+    res.status(200).json({ data: doc });
+  } catch (e) {
+    console.error(e);
+    res.status(400).end();
+  }
 };
-
-// Function to simulate protected routes
-const protected = (req, res) => {
-    return res.status(200).send({
-        success: true,
-        user: {
-            id: req.user._id,
-            email: req.user.email,
-        },
-    });
-};
-
-module.exports = { register, login, protected };
+module.exports = { createUser, updateUser, getUser, removeUser };
