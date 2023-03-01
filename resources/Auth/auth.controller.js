@@ -1,11 +1,11 @@
 // Important requires
-const UserModel = require("./user.model");
+const UserModel = require("../User/user.model");
 const { compareSync } = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userValidSchema =
   require("../../utils/ValidationSchemas/User.ValidationSchema").userValidSchemaRegister;
 // Function to register
-const register = async (req, res) => {
+const register = async (req, res, next) => {
   try {
     /**
      * Validation on data
@@ -48,15 +48,14 @@ const register = async (req, res) => {
   } catch (error) {
     console.error(error);
     if (error.isJoi) {
-      res.status(422).end();
-    } else {
-      res.status(400).end();
+      error.status = 422;
     }
+    next(error);
   }
 };
 
 // Function to login
-const login = (req, res) => {
+const login = (req, res, next) => {
   /**
    * Validation on data
    */

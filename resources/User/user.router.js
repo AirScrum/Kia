@@ -1,22 +1,18 @@
-const passport = require("passport");
-var myPassportService = require("../../config/passport");
-const { register, login, protected } = require('./user.controller')
+const {
+  createUser,
+  getUser,
+  removeUser,
+  updateUser,
+} = require("./user.controller");
 
 module.exports = function (app) {
-
   /**
    *
-   * Account Management Routes
+   * User CRUD routes
    *
    */
-
-  // To register
-  app.post("/register", register);
-
-  // To login
-  app.post("/login", login);
-
-  // Example of protected routes
-  app.get("/protected", passport.authenticate("jwt", { session: false }), protected);
-  
+  app.post("/users", createUser);
+  app.get("/users", getUser);
+  app.put("/users", updateUser);
+  app.delete("/users", removeUser);
 };

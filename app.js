@@ -9,6 +9,7 @@ const userStoriesData = require("./utils/constants").userStories;
 const passport = require("passport");
 const session = require("express-session");
 const createError = require("http-errors");
+const authRouter = require("./resources/Auth/auth.router").authRouter;
 // Instances
 const app = express();
 const userServiceProxy = httpProxy("http://localhost:3000/");
@@ -21,10 +22,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.json());
+require("./resources/GoogleAuth/GoogleAuth.router")(app);
+require("./resources/User/user.router")(app);
+app.use("/auth", authRouter);
 //Error handling
-app.use(async (req, res, next) => {
-  next(createError.NotFound());
-});
+
 app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.send({
@@ -34,13 +36,7 @@ app.use((err, req, res, next) => {
     },
   });
 });
-// To make app routes on users to user.router.js and GoogleAuth.router.js
-require("./resources/User/user.router")(app);
-require("./resources/GoogleAuth/GoogleAuth.router")(app);
-
 //To connect to database
-const dbURI = process.env.MONGO_DB_URI;
-
 mongoose
   .connect(process.env.MONGO_DB_URI, {
     useNewUrlParser: true,

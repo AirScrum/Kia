@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-export const userValidSchemaRegister = Joi.object({
+const userValidSchemaRegister = Joi.object({
   fullName: Joi.string().lowercase().trim().required(),
   password: Joi.string().min(12).max(15).required(),
   email: Joi.string()
@@ -10,3 +10,4 @@ export const userValidSchemaRegister = Joi.object({
     .required(),
   birthDate: Joi.string().isoDate().trim(),
 });
+module.exports = { userValidSchemaRegister };
