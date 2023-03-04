@@ -1,8 +1,8 @@
 //Requires
-const express = require('express')
-const httpProxy = require('express-http-proxy')
-var cors = require('cors')
-const mongoose = require('mongoose');
+const express = require("express");
+const httpProxy = require("express-http-proxy");
+var cors = require("cors");
+const mongoose = require("mongoose");
 var axios = require("axios").default;
 const dotenv=require('dotenv').config();
 const userStoriesData = require('./utils/constants').userStories;
@@ -18,7 +18,7 @@ const userServiceProxy2 = httpProxy('http://localhost:8002/')
 
 // Middlewares
 app.use(session({ secret: process.env.EXPRESS_SECRET }));
-app.use(cors())
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -29,31 +29,33 @@ app.use(express.json())
 const upload = multer({ dest: 'uploads/' });
 
 // To make app routes on users to user.router.js and GoogleAuth.router.js
-require('./resources/User/user.router')(app);
-require('./resources/GoogleAuth/GoogleAuth.router')(app);
+require("./resources/User/user.router")(app);
+require("./resources/GoogleAuth/GoogleAuth.router")(app);
 
 //To connect to database
-const dbURI=process.env.MONGO_DB_URI;
+const dbURI = process.env.MONGO_DB_URI;
 
-mongoose.connect(process.env.MONGO_DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then((result) => {
-        app.listen(process.env.PORT || 4000)
-        console.log(`Example app listening on port ${process.env.PORT}`)
-    }
-    )
-    .catch((err) => console.log(err));
-
+mongoose
+  .connect(process.env.MONGO_DB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then((result) => {
+    app.listen(process.env.PORT || 4000);
+    console.log(`Example app listening on port ${process.env.PORT}`);
+  })
+  .catch((err) => console.log(err));
 
 /**
- * 
+ *
  * Other Routes
- * 
+ *
  */
 
 // Proxy request
-app.get('/', (req, res, next) => {
-  userServiceProxy(req, res, next)
-})
+app.get("/", (req, res, next) => {
+  userServiceProxy(req, res, next);
+});
 
 
 /**
@@ -85,6 +87,6 @@ app.post('/request/speech2text',upload.single('file'), (req,res,next)=>{
 })
 
 //Route request to the Processing service
-app.post('/request/process', (req, res, next) => {
-  userServiceProxy2(req, res, next)
-})
+app.post("/request/process", (req, res, next) => {
+  userServiceProxy2(req, res, next);
+});
