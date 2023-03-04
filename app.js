@@ -8,10 +8,12 @@ const dotenv=require('dotenv').config();
 const userStoriesData = require('./utils/constants').userStories;
 const passport = require('passport');
 const session = require('express-session');
+const multer  = require('multer');
+const fs = require('fs');
 
 // Instances
 const app = express()
-const userServiceProxy = httpProxy('http://localhost:3000/')
+const userServiceProxy = httpProxy('http://localhost:4001/')
 const userServiceProxy2 = httpProxy('http://localhost:8002/')
 
 // Middlewares
@@ -21,6 +23,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.json())
+
+
+// Define the storage location and filename of uploaded file
+const upload = multer({ dest: 'uploads/' });
 
 // To make app routes on users to user.router.js and GoogleAuth.router.js
 require('./resources/User/user.router')(app);
@@ -38,8 +44,6 @@ mongoose.connect(process.env.MONGO_DB_URI, { useNewUrlParser: true, useUnifiedTo
     .catch((err) => console.log(err));
 
 
-
-
 /**
  * 
  * Other Routes
@@ -51,24 +55,33 @@ app.get('/', (req, res, next) => {
   userServiceProxy(req, res, next)
 })
 
-//Route the request to the Speech2Text service
-app.get('/request/speech2text', (req, res, next) => {
-  userServiceProxy(req, res, next)
-})
 
 /**
- * @author Shehab Adel
- * @summary A prototype middleware to return static user stories
+ * Converting speech to text
  */
-app.post('/userstories',async (req,res,next)=>{
-  try {
-    //TODO Delete this after prototype presentation lol
-    await new Promise(resolve => setTimeout(resolve, 10000));
-    res.json({data:userStoriesData}).status(200).send();
-  } catch (error) {
-    console.error(error)
-    res.status(500).end();
-  }
+app.post('/request/speech2text',upload.single('file'), (req,res,next)=>{
+
+  const { path } = req.file;
+  const audioBuffer = fs.readFileSync(path);
+  
+  const data = {
+    buffer: audioBuffer,
+  };
+  
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  };
+
+  fs.unlinkSync(path); // delete the uploaded file
+
+  axios.post('http://localhost:4001/request/speech2text', data, config)
+    .then(response => console.log(response.data))
+    .catch(error => console.log(error));
+
+    //Todo
+    //Send back res to the user
 })
 
 //Route request to the Processing service
