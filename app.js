@@ -59,15 +59,17 @@ app.get("/", (req, res, next) => {
 
 
 /**
- * Converting speech to text
+ * Converting speech to text, first upload file to convert it to array of buffer and send it to speech to text service. And authenticate user to get user id
  */
-app.post('/request/speech2text',upload.single('file'), (req,res,next)=>{
+app.post('/request/speech2text',upload.single('file'), passport.authenticate("jwt", { session: false }), (req,res,next)=>{
 
   const { path } = req.file;
   const audioBuffer = fs.readFileSync(path);
-  
+
+  // Prepare data to be sent to the speech to text service
   const data = {
     buffer: audioBuffer,
+    userid: req.user._id
   };
   
   const config = {
@@ -76,14 +78,27 @@ app.post('/request/speech2text',upload.single('file'), (req,res,next)=>{
     }
   };
 
-  fs.unlinkSync(path); // delete the uploaded file
+  // delete the uploaded file
+  fs.unlinkSync(path); 
 
+  // Send the request using axios
   axios.post('http://localhost:4001/request/speech2text', data, config)
-    .then(response => console.log(response.data))
-    .catch(error => console.log(error));
+    .then(response => {
 
-    //Todo
-    //Send back res to the user
+      /**
+       * 
+       * Todo, send a request to the processing service to begin processing
+       * 
+       */
+
+      console.log(response.data)
+      return res.status(200).send({sucess: "true"})
+    })
+    .catch(error => {
+      return res.status(500).send(error)
+    })
+
+    
 })
 
 //Route request to the Processing service
