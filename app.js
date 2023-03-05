@@ -82,7 +82,7 @@ app.post('/request/speech2text',upload.single('file'), passport.authenticate("jw
   fs.unlinkSync(path); 
 
   // Send the request using axios
-  axios.post('http://localhost:4001/request/speech2text', data, config)
+  axios.post(process.env.SPEECH2TEXT_URL +'request/speech2text', data, config)
     .then(response => {
 
       /**
