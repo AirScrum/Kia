@@ -7,6 +7,7 @@ var axios = require("axios").default;
 const dotenv=require('dotenv').config();
 const userStoriesData = require('./utils/constants').userStories;
 const passport = require('passport');
+var myPassportService = require("./config/passport");
 const session = require('express-session');
 const multer  = require('multer');
 const fs = require('fs');
@@ -14,7 +15,7 @@ const fs = require('fs');
 // Instances
 const app = express()
 const userServiceProxy = httpProxy('http://localhost:4001/')
-const userServiceProxy2 = httpProxy('http://localhost:8002/')
+const userServiceProxy2 = httpProxy('http://localhost:4002/')
 
 // Middlewares
 app.use(session({ secret: process.env.EXPRESS_SECRET }));
@@ -100,6 +101,24 @@ app.post('/request/speech2text',upload.single('file'), passport.authenticate("jw
 
     
 })
+
+//Route request to the Processing service
+app.get("/profile", passport.authenticate("jwt", { session: false }), (req, res, next) => {
+
+  const data={
+    fullname: req.user.fullName,
+    email: req.user.email,
+    birthDate: req.user.birthDate,
+    phoneNo: req.user.phoneNo,
+    gender: req.user.gender,
+    title: req.user.title,
+    address: req.user.address,
+    bio: req.user.bio
+  }
+
+  return res.status(200).send(data);
+});
+
 
 //Route request to the Processing service
 app.post("/request/process", (req, res, next) => {
