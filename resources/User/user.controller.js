@@ -19,10 +19,10 @@ const register = async (req, res) => {
       throw new Error("User Already Exists!");
     }
     const user = await UserModel.create({
-      fullName: req.body.fullName,
-      email: req.body.email,
-      password: hashSync(req.body.password, 10),
-      birthDate: req.body.birthDate,
+      fullName: validResult.fullName,
+      email: validResult.email,
+      password: hashSync(validResult.password, 10),
+      birthDate: validResult.birthDate,
     });
     if (!user) {
       return res.status(400).json({
