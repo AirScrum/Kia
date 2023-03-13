@@ -98,43 +98,10 @@ app.post('/request/speech2text',upload.single('file'), passport.authenticate("jw
     .catch(error => {
       return res.status(500).send(error)
     })
-
-    
+  
 })
 
-//Route request to the Processing service
-app.get("/profile", passport.authenticate("jwt", { session: false }), (req, res, next) => {
 
-  const data={
-    fullname: req.user.fullName,
-    email: req.user.email,
-    birthDate: req.user.birthDate,
-    phoneNo: req.user.phoneNo,
-    gender: req.user.gender,
-    title: req.user.title,
-    address: req.user.address,
-    bio: req.user.bio
-  }
-
-  return res.status(200).send(data);
-});
-
-//Route request to the Processing service
-app.post("/profile", passport.authenticate("jwt", { session: false }), (req, res, next) => {
-
-
-  // Send the request using axios
-  axios.post(process.env.USER_MANAGEMENT_URL +'profile', {
-    request:req.body,
-    userid: req.user.id
-  })
-    .then(response => {
-      return res.status(200).send({sucess: "true"})
-    })
-    .catch(error => {
-      return res.status(500).send(error)
-    })
-});
 
 
 //Route request to the Processing service

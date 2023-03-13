@@ -1,6 +1,6 @@
 const passport = require("passport");
 var myPassportService = require("../../config/passport");
-const { register, login, protected } = require('./user.controller')
+const { register, login, protected, getProfileDetails , updateProfile } = require('./user.controller')
 
 module.exports = function (app) {
 
@@ -18,5 +18,13 @@ module.exports = function (app) {
 
   // Example of protected routes
   app.get("/protected", passport.authenticate("jwt", { session: false }), protected);
+
+  app.get("/profile", passport.authenticate("jwt", { session: false }), getProfileDetails);
+  
+  
+  app.post("/profile", passport.authenticate("jwt", { session: false }), updateProfile);
+  
+  
+    
   
 };
