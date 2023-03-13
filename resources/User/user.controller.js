@@ -3,6 +3,9 @@ const UserModel = require("./user.model");
 const { hashSync, compareSync } = require("bcrypt");
 const jwt = require("jsonwebtoken");
 var axios = require("axios").default;
+const Token = require("../Token/token.model");
+const crypto = require("crypto");
+const sendEmail = require("../../utils/sendEmail");
 const userValidSchema =
     require("../../utils/ValidationSchemas/User.ValidationSchema").userValidSchemaRegister;
 const userValidSchemaLogin =
@@ -36,9 +39,18 @@ const register = async (req, res) => {
                 error: err,
             });
         }
+
+        const token = await new Token({
+			userId: user._id,
+			token: crypto.randomBytes(32).toString("hex"),
+		}).save();
+
+        const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
+		await sendEmail(user.email, "Verify Email", url);
+
         return res.status(201).json({
             success: true,
-            message: "User created successfully.",
+            message: "An email is sent to your account. Please verify",
             user: {
                 id: user._id,
                 email: user.email,

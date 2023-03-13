@@ -39,6 +39,10 @@ const userSchema = new Schema(
         bio: {
             type: String,
         },
+        verified: { 
+            type: Boolean, 
+            default: false 
+        },
     },
     { timestamps: true }
 );
