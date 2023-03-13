@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 var axios = require("axios").default;
 const userValidSchema =
     require("../../utils/ValidationSchemas/User.ValidationSchema").userValidSchemaRegister;
+const userValidSchemaLogin =
+    require("../../utils/ValidationSchemas/User.ValidationSchema").userValidSchemaLogin;
 
 // Function to register
 const register = async (req, res) => {
@@ -61,7 +63,7 @@ const login = async (req, res) => {
         /**
          * Validation on data
          */
-        const validResult = await userValidSchema.validateAsync(req.body);
+        const validResult = await userValidSchemaLogin.validateAsync(req.body);
         // Check whether the credentials entered matches the data in the database or not to verify users
         const user = await UserModel.findOne({ email: validResult.email });
         if (!user) {
