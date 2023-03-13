@@ -23,7 +23,10 @@ const register = async (req, res) => {
             .lean()
             .exec();
         if (userExists) {
-            throw new Error("User Already Exists!");
+            return res.status(403).json({
+                success: false,
+                message: "User already exists!",
+            });
         }
         const user = await UserModel.create({
             firstName: validResult.firstName,
@@ -90,6 +93,24 @@ const login = async (req, res) => {
                 message: "Incorrect Email/Password",
             });
         }
+
+        // Email not verified
+        if (!user.verified) {
+			let token = await Token.findOne({ userId: user._id });
+			if (!token) {
+				token = await new Token({
+					userId: user._id,
+					token: crypto.randomBytes(32).toString("hex"),
+				}).save();
+				const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
+				await sendEmail(user.email, "Verify Email", url);
+			}
+
+			return res
+				.status(400)
+				.send({ message: "An Email sent to your account please verify" });
+		}
+
         // User matched
         const payload = {
             id: user._id,
@@ -167,10 +188,33 @@ const updateProfile = async (req, res) => {
         });
 };
 
+const verifyToken = async (req, res) => {
+
+    try {
+        const user = await UserModel.findOne({ _id: req.params.id });
+        if (!user) return res.status(400).send({ message: "Invalid link" });
+
+        const token = await Token.findOne({
+          userId: user._id,
+          token: req.params.token,
+        });
+        if (!token) return res.status(400).send({ message: "Invalid link" });
+    
+        await UserModel.updateOne({ _id: user._id},{ verified: true });
+        await token.remove();
+        res.status(200).send({ message: "Email verified successfully" });
+      } catch (error) {
+        console.log(error)
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+};
+
+
 module.exports = {
     register,
     login,
     protected,
     getProfileDetails,
     updateProfile,
+    verifyToken,
 };
