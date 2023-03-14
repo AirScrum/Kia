@@ -102,9 +102,10 @@ const login = async (req, res) => {
 					userId: user._id,
 					token: crypto.randomBytes(32).toString("hex"),
 				}).save();
-				const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
-				await sendEmail(user.email, "Verify Email", url);
 			}
+
+            const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
+			await sendEmail(user.email, "Verify Email", url);
 
 			return res
 				.status(400)
@@ -198,7 +199,7 @@ const verifyToken = async (req, res) => {
           userId: user._id,
           token: req.params.token,
         });
-        if (!token) return res.status(400).send({ message: "Invalid link" });
+        if (!token) return res.status(400).send({ message: "Invalid or Expired link" });
     
         await UserModel.updateOne({ _id: user._id},{ verified: true });
         await token.remove();
