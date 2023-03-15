@@ -44,12 +44,12 @@ const register = async (req, res) => {
         }
 
         const token = await new Token({
-			userId: user._id,
-			token: crypto.randomBytes(32).toString("hex"),
-		}).save();
+            userId: user._id,
+            token: crypto.randomBytes(32).toString("hex"),
+        }).save();
 
         const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
-		await sendEmail(user.email, "Verify Email", url);
+        await sendEmail(user.email, "Verify Email", url);
 
         return res.status(201).json({
             success: true,
@@ -96,21 +96,23 @@ const login = async (req, res) => {
 
         // Email not verified
         if (!user.verified) {
-			let token = await Token.findOne({ userId: user._id });
-			if (!token) {
-				token = await new Token({
-					userId: user._id,
-					token: crypto.randomBytes(32).toString("hex"),
-				}).save();
-			}
+            let token = await Token.findOne({ userId: user._id });
+            if (!token) {
+                token = await new Token({
+                    userId: user._id,
+                    token: crypto.randomBytes(32).toString("hex"),
+                }).save();
+            }
 
             const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
-			await sendEmail(user.email, "Verify Email", url);
+            await sendEmail(user.email, "Verify Email", url);
 
-			return res
-				.status(400)
-				.send({ message: "An Email sent to your account please verify" });
-		}
+            return res
+                .status(400)
+                .send({
+                    message: "An Email sent to your account please verify",
+                });
+        }
 
         // User matched
         const payload = {
@@ -190,26 +192,95 @@ const updateProfile = async (req, res) => {
 };
 
 const verifyToken = async (req, res) => {
-
     try {
         const user = await UserModel.findOne({ _id: req.params.id });
         if (!user) return res.status(400).send({ message: "Invalid link" });
 
         const token = await Token.findOne({
-          userId: user._id,
-          token: req.params.token,
+            userId: user._id,
+            token: req.params.token,
         });
-        if (!token) return res.status(400).send({ message: "Invalid or Expired link" });
-    
-        await UserModel.updateOne({ _id: user._id},{ verified: true });
+        if (!token)
+            return res.status(400).send({ message: "Invalid or Expired link" });
+
+        await UserModel.updateOne({ _id: user._id }, { verified: true });
         await token.remove();
         res.status(200).send({ message: "Email verified successfully" });
-      } catch (error) {
-        console.log(error)
+    } catch (error) {
+        console.log(error);
         res.status(500).send({ message: "Internal Server Error" });
-      }
+    }
 };
 
+const validateLink = async (req, res) => {
+    try {
+        const user = await UserModel.findOne({ _id: req.params.id });
+        if (!user) return res.status(400).send({ message: "Invalid link" });
+
+        const token = await Token.findOne({
+            userId: user._id,
+            token: req.params.token,
+        });
+        if (!token)
+            return res.status(400).send({ message: "Invalid or Expired link" });
+
+        res.status(200).send({ message: "Valid Link" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const user = await UserModel.findOne({ _id: req.params.id });
+        if (!user) return res.status(400).send({ message: "Invalid link" });
+
+        const token = await Token.findOne({
+            userId: user._id,
+            token: req.params.token,
+        });
+        if (!token)
+            return res.status(400).send({ message: "Invalid or Expired link" });
+
+        await token.remove();
+
+        await UserModel.updateOne({ _id: user._id }, { password: hashSync(req.body.password, 10) });
+
+        res.status(200).send({ message: "Password Changed Successfully" });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+};
+
+const forgetPassword = async (req, res) => {
+
+    try {
+        const user = await UserModel.findOne({ email: req.body.email });
+
+        if (!user) return res.status(400).send({ message: "Invalid Email" });
+
+        let token = await Token.findOne({ userId: user._id });
+        if (!token) {
+            token = await new Token({
+                userId: user._id,
+                token: crypto.randomBytes(32).toString("hex"),
+            }).save();
+        }
+
+        const url = `${process.env.CLIENT_URL}users/${user.id}/forget/${token.token}`;
+        await sendEmail(user.email, "Reset Password", url);
+
+        return res
+            .status(200)
+            .send({ message: "An Email sent to your account. Click on the link to reset password" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+};
 
 module.exports = {
     register,
@@ -218,4 +289,7 @@ module.exports = {
     getProfileDetails,
     updateProfile,
     verifyToken,
+    forgetPassword,
+    validateLink,
+    resetPassword,
 };
