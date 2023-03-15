@@ -49,7 +49,8 @@ const register = async (req, res) => {
         }).save();
 
         const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
-        await sendEmail(user.email, "Verify Email", url);
+        const html = `<h2>Click on the below link to verify your email</h2> <a href=${url}>${url}</a>`
+        await sendEmail(user.email, "Verify Email", html);
 
         return res.status(201).json({
             success: true,
@@ -105,7 +106,8 @@ const login = async (req, res) => {
             }
 
             const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
-            await sendEmail(user.email, "Verify Email", url);
+            const html = `<h2>Click on the below link to verify your email</h2> <a href=${url}>${url}</a>`
+            await sendEmail(user.email, "Verify Email", html);
 
             return res
                 .status(400)
@@ -271,7 +273,8 @@ const forgetPassword = async (req, res) => {
         }
 
         const url = `${process.env.CLIENT_URL}users/${user.id}/forget/${token.token}`;
-        await sendEmail(user.email, "Reset Password", url);
+        const html = `<h2>Click on the below link to go to the reset password page, to change your password</h2> <a href=${url}>${url}</a>`
+        await sendEmail(user.email, "Reset Password", html);
 
         return res
             .status(200)
