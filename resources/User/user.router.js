@@ -1,6 +1,6 @@
 const passport = require("passport");
 var myPassportService = require("../../config/passport");
-const { register, login, protected, getProfileDetails , updateProfile, verifyToken, forgetPassword, validateLink, resetPassword} = require('./user.controller')
+const { register, login, protected, getProfileDetails , updateProfile, verifyToken, forgetPassword, validateLink, resetPassword, getHistory} = require('./user.controller')
 
 module.exports = function (app) {
 
@@ -32,5 +32,7 @@ module.exports = function (app) {
   app.get("/:id/validate/:token/", validateLink);
 
   app.post("/forget", forgetPassword);
+
+  app.get("/history", passport.authenticate("jwt", { session: false }), getHistory);
   
 };

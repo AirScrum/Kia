@@ -285,6 +285,21 @@ const forgetPassword = async (req, res) => {
     }
 };
 
+const getHistory = async (req, res) => {
+
+    // Send the request using axios
+    axios
+        .post(process.env.USER_MANAGEMENT_URL + "history", {
+            userid: req.user.id,
+        })
+        .then((response) => {
+            return res.status(200).send(response.data);
+        })
+        .catch((error) => {
+            return res.status(500).send(error);
+        });
+};
+
 module.exports = {
     register,
     login,
@@ -295,4 +310,5 @@ module.exports = {
     forgetPassword,
     validateLink,
     resetPassword,
+    getHistory,
 };
