@@ -4,8 +4,8 @@ const { hashSync, compareSync } = require("bcrypt");
 const jwt = require("jsonwebtoken");
 var axios = require("axios").default;
 const Token = require("../Token/token.model");
-const crypto = require("crypto");
 const sendEmail = require("../../utils/sendEmail");
+const crypto = require("crypto");
 const userValidSchema =
     require("../../utils/ValidationSchemas/User.ValidationSchema").userValidSchemaRegister;
 const userValidSchemaLogin =
@@ -49,7 +49,7 @@ const register = async (req, res) => {
         }).save();
 
         const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
-        const html = `<h2>Click on the below link to verify your email</h2> <a href=${url}>${url}</a>`
+        const html = `<h2>Click on the below link to verify your email</h2> <a href=${url}>${url}</a>`;
         await sendEmail(user.email, "Verify Email", html);
 
         return res.status(201).json({
@@ -106,31 +106,47 @@ const login = async (req, res) => {
             }
 
             const url = `${process.env.CLIENT_URL}users/${user.id}/verify/${token.token}`;
-            const html = `<h2>Click on the below link to verify your email</h2> <a href=${url}>${url}</a>`
+            const html = `<h2>Click on the below link to verify your email</h2> <a href=${url}>${url}</a>`;
             await sendEmail(user.email, "Verify Email", html);
 
-            return res
-                .status(400)
-                .send({
-                    message: "An Email sent to your account please verify",
-                });
+            return res.status(400).send({
+                message: "An Email sent to your account please verify",
+            });
         }
+
+        const timestamp = Date.now();
 
         // User matched
         const payload = {
             id: user._id,
+            timestamp
         };
 
-        // Generate a token
+        // Generate an access token
         const token = jwt.sign(payload, process.env.SECRET_STRING, {
-            expiresIn: "10h",
+            expiresIn: "1h",
         });
+
+        // Generate a refresh token
+        const refreshToken = jwt.sign(
+            payload,
+            process.env.SECRET_STRING_REFRESH,
+            {
+                expiresIn: "1d",
+            }
+        );
+
+        await UserModel.updateOne(
+            { _id: user._id },
+            { refreshToken: encrypt(refreshToken) }
+        );
 
         // Send the token back to the user
         return res.status(200).send({
             success: true,
             message: "Logged in successfully!",
             token: "Bearer " + token,
+            refresh: "Bearer " + encrypt(refreshToken)
         });
     } catch (error) {
         if (error.isJoi) {
@@ -247,10 +263,12 @@ const resetPassword = async (req, res) => {
 
         await token.remove();
 
-        await UserModel.updateOne({ _id: user._id }, { password: hashSync(req.body.password, 10) });
+        await UserModel.updateOne(
+            { _id: user._id },
+            { password: hashSync(req.body.password, 10) }
+        );
 
         res.status(200).send({ message: "Password Changed Successfully" });
-        
     } catch (error) {
         console.log(error);
         res.status(500).send({ message: "Internal Server Error" });
@@ -258,7 +276,6 @@ const resetPassword = async (req, res) => {
 };
 
 const forgetPassword = async (req, res) => {
-
     try {
         const user = await UserModel.findOne({ email: req.body.email });
 
@@ -273,12 +290,15 @@ const forgetPassword = async (req, res) => {
         }
 
         const url = `${process.env.CLIENT_URL}users/${user.id}/forget/${token.token}`;
-        const html = `<h2>Click on the below link to go to the reset password page, to change your password</h2> <a href=${url}>${url}</a>`
+        const html = `<h2>Click on the below link to go to the reset password page, to change your password</h2> <a href=${url}>${url}</a>`;
         await sendEmail(user.email, "Reset Password", html);
 
         return res
             .status(200)
-            .send({ message: "An Email sent to your account. Click on the link to reset password" });
+            .send({
+                message:
+                    "An Email sent to your account. Click on the link to reset password",
+            });
     } catch (error) {
         console.log(error);
         res.status(500).send({ message: "Internal Server Error" });
@@ -286,7 +306,6 @@ const forgetPassword = async (req, res) => {
 };
 
 const getHistory = async (req, res) => {
-
     // Send the request using axios
     axios
         .post(process.env.USER_MANAGEMENT_URL + "history", {
@@ -300,6 +319,73 @@ const getHistory = async (req, res) => {
         });
 };
 
+const refreshRoute = (req, res) => {
+    // Extract the token from the header
+    const authHeader = req.headers["authorization"];
+    var refreshToken = authHeader && authHeader.split(" ")[1];
+
+    // Check whether the refresh token is null or not
+    if (refreshToken == null) return res.sendStatus(401);
+
+    refreshToken = decrypt(refreshToken.toString());
+
+    // Verify the refresh token
+    jwt.verify(
+        refreshToken,
+        process.env.SECRET_STRING_REFRESH,
+        (err, payload) => {
+            console.log(err);
+
+            // Send forbidden status
+            if (err) return res.sendStatus(403);
+
+            const timestamp = Date.now();
+
+            // User matched
+            const accessPayload = {
+                id: payload.id,
+                timestamp
+            };
+
+            // Generate new access token
+            // Generate an access token
+            const accessToken = jwt.sign(accessPayload, process.env.SECRET_STRING, {
+                expiresIn: "1h",
+            });
+            res.status(200).send({ accessToken: accessToken });
+        }
+    );
+};
+
+//Encrypting text
+function encrypt(text) {
+    let cipher = crypto.createCipheriv(
+        "aes-256-cbc",
+        Buffer.from(process.env.AES_KEY),
+        process.env.AES_IV
+    );
+
+    let encrypted = cipher.update(text);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+
+    return encrypted.toString("hex");
+}
+
+// Decrypting text
+function decrypt(text) {
+    let encryptedText = Buffer.from(text, "hex");
+
+    let decipher = crypto.createDecipheriv(
+        "aes-256-cbc",
+        Buffer.from(process.env.AES_KEY),
+        process.env.AES_IV
+    );
+
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+}
+
 module.exports = {
     register,
     login,
@@ -311,4 +397,6 @@ module.exports = {
     validateLink,
     resetPassword,
     getHistory,
+    refreshRoute,
+    encrypt,
 };
