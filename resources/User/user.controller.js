@@ -309,8 +309,8 @@ const forgetPassword = async (req, res) => {
 const getHistory = async (req, res) => {
     // Send the request using axios
     axios
-        .post(process.env.USER_MANAGEMENT_URL + "history", {
-            userid: req.user.id,
+        .post(`${process.env.USER_MANAGEMENT_URL}api/texts/`, {
+            userID: req.user.id,
         })
         .then((response) => {
             return res.status(200).send(response.data);
