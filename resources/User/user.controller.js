@@ -197,7 +197,7 @@ const getProfileDetails = async (req, res) => {
 const updateProfile = async (req, res) => {
     // Send the request using axios
     axios
-        .post(process.env.USER_MANAGEMENT_URL + "profile", {
+        .post(`${process.env.USER_MANAGEMENT_URL}api/users/profile`, {
             request: req.body,
             userid: req.user.id,
         })
@@ -205,6 +205,7 @@ const updateProfile = async (req, res) => {
             return res.status(200).send({ sucess: "true" });
         })
         .catch((error) => {
+            console.log(error)
             return res.status(500).send(error);
         });
 };
