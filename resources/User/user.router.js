@@ -1,9 +1,21 @@
 const passport = require("passport");
 var myPassportService = require("../../config/passport");
-const { register, login, protected, getProfileDetails , updateProfile, verifyToken, forgetPassword, validateLink, resetPassword, getHistory, refreshRoute} = require('./user.controller')
+const {
+  register,
+  login,
+  protected,
+  getProfileDetails,
+  updateProfile,
+  verifyToken,
+  forgetPassword,
+  validateLink,
+  resetPassword,
+  getHistory,
+  refreshRoute,
+  getMeetingData,
+} = require("./user.controller");
 
 module.exports = function (app) {
-
   /**
    *
    * Account Management Routes
@@ -17,15 +29,26 @@ module.exports = function (app) {
   app.post("/login", login);
 
   // Example of protected routes
-  app.get("/protected", passport.authenticate("jwt", { session: false }), protected);
+  app.get(
+    "/protected",
+    passport.authenticate("jwt", { session: false }),
+    protected
+  );
 
   app.get("/refresh", refreshRoute);
 
-  app.get("/profile", passport.authenticate("jwt", { session: false }), getProfileDetails);
-  
-  app.post("/profile", passport.authenticate("jwt", { session: false }), updateProfile);
-  
-  
+  app.get(
+    "/profile",
+    passport.authenticate("jwt", { session: false }),
+    getProfileDetails
+  );
+
+  app.post(
+    "/profile",
+    passport.authenticate("jwt", { session: false }),
+    updateProfile
+  );
+
   app.get("/:id/verify/:token/", verifyToken);
 
   app.post("/:id/reset/:token/", resetPassword);
@@ -34,6 +57,14 @@ module.exports = function (app) {
 
   app.post("/forget", forgetPassword);
 
-  app.get("/history", passport.authenticate("jwt", { session: false }), getHistory);
-
+  app.get(
+    "/history",
+    passport.authenticate("jwt", { session: false }),
+    getHistory
+  );
+  app.get(
+    "/history/:meetingID",
+    passport.authenticate("jwt", { session: false }),
+    getMeetingData
+  );
 };
