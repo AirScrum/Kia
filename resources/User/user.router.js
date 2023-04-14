@@ -13,6 +13,7 @@ const {
   getHistory,
   refreshRoute,
   getMeetingData,
+  deleteMeeting,
 } = require("./user.controller");
 
 module.exports = function (app) {
@@ -66,5 +67,10 @@ module.exports = function (app) {
     "/history/:meetingID",
     passport.authenticate("jwt", { session: false }),
     getMeetingData
+  );
+  app.delete(
+    "/history/:meetingID",
+    passport.authenticate("jwt", { session: false }),
+    deleteMeeting
   );
 };
