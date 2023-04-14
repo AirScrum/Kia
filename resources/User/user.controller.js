@@ -10,7 +10,7 @@ const userValidSchema =
   require("../../utils/ValidationSchemas/User.ValidationSchema").userValidSchemaRegister;
 const userValidSchemaLogin =
   require("../../utils/ValidationSchemas/User.ValidationSchema").userValidSchemaLogin;
-
+const createError = require("http-errors");
 // Function to register
 const register = async (req, res) => {
   try {
@@ -323,15 +323,23 @@ const getMeetingData = async (req, res, next) => {
         textID: meetingID,
       }
     );
-    console.log(response.data);
     if (response.status === 200) {
       return res.status(200).send(response.data);
     } else {
       return res.status(response.status).send(response.data);
     }
   } catch (error) {
-    console.log(error.response.status);
-    return res.status(error.response.status).send(error.response.data.error);
+    console.error(error.message);
+    if (error?.response) {
+      console.log(error.response?.status);
+      return res
+        .status(error.response?.status)
+        .send(error.response?.data.error);
+    } else if (error?.request) {
+      return res.status(500).send(error.request);
+    } else {
+      res.status(500).send(error.message);
+    }
   }
 };
 
@@ -349,8 +357,17 @@ const deleteMeeting = async (req, res, next) => {
       return res.status(response.status).send(response.data);
     }
   } catch (error) {
-    console.log(error.response.status);
-    return res.status(error.response.status).send(error.response.data.error);
+    console.error(error.message);
+    if (error?.response) {
+      console.log(error.response?.status);
+      return res
+        .status(error.response?.status)
+        .send(error.response?.data.error);
+    } else if (error?.request) {
+      return res.status(500).send(error.request);
+    } else {
+      res.status(500).send(error.message);
+    }
   }
 };
 
