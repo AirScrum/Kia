@@ -32,6 +32,7 @@ const upload = multer({ dest: "uploads/" });
 // To make app routes on users to user.router.js and GoogleAuth.router.js
 require("./resources/User/user.router")(app);
 require("./resources/GoogleAuth/GoogleAuth.router")(app);
+require("./resources/UserStory/UserStory.router")(app);
 // require("./resources/Text/text.router")(app);
 //To connect to database
 const dbURI = process.env.MONGO_DB_URI;
