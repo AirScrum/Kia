@@ -15,6 +15,7 @@ const {
   getMeetingData,
   deleteMeeting,
 } = require("./user.controller");
+const { getMeetingMetaData } = require("../Text/text.controller");
 
 module.exports = function (app) {
   /**
@@ -72,5 +73,10 @@ module.exports = function (app) {
     "/history/:meetingID",
     passport.authenticate("jwt", { session: false }),
     deleteMeeting
+  );
+  app.get(
+    "/history/meetingmeta/:meetingID",
+    passport.authenticate("jwt", { session: false }),
+    getMeetingMetaData
   );
 };
