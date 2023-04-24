@@ -1,6 +1,6 @@
 // Important requires
 const UserModel = require("./user.model");
-const { hashSync, compareSync } = require("bcrypt");
+const { hashSync, compareSync } = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 var axios = require("axios").default;
 const Token = require("../Token/token.model");
