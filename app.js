@@ -63,7 +63,7 @@ app.post(
     "/request/speech2text",
     upload.single("file"),
     passport.authenticate("jwt", { session: false }),
-    (req, res, next) => {
+    async (req, res, next) => {
         const { path } = req.file;
         const audioBuffer = fs.readFileSync(path);
         // Prepare data to be sent to the speech to text service
@@ -78,49 +78,45 @@ app.post(
         };
         // delete the uploaded file
         fs.unlinkSync(path);
-        // Send the request using axios
-        axios
-            .post(
+        try {
+            const speech2TxtResponse = await axios.post(
                 process.env.SPEECH2TEXT_URL + "request/speech2text",
                 data,
                 config
-            )
-            .then((response) => {
-                /**
-                 *
-                 * Todo, send a request to the processing service to begin processing
-                 *
-                 */
-                if(response.data?.id){
-                  axios
-                    .post(
-                        process.env.PROCESSING_URL,
-                        {
-                            textID: response.data.id,
+            );
+            console.log(`speech2TxtResponse data`, speech2TxtResponse.data);
+            if (speech2TxtResponse.data?.text.id) {
+                const processingResponse = await axios.post(
+                    process.env.PROCESSING_URL,
+                    {
+                        textID: speech2TxtResponse.data?.text.id,
+                    },
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
                         },
-                        {
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                        }
-                    )
-                    .then((response) => {
-                        /**
-                         *
-                         * Todo, send a request to the processing service to begin processing
-                         *
-                         */
-                        console.log(response.data);
-                    })
-                    .catch((error) => {
-                        return res.status(500).send(error);
-                    });
+                    }
+                );
+                if(!processingResponse){
+                    throw new Error()
                 }
-                return res.status(200).send({ sucess: "true" });
-            })
-            .catch((error) => {
-                return res.status(500).send(error);
-            });
+                return res.status(200).json({message:"File is being processed!",data:processingResponse.data})
+            }else{
+                return res.status(500).json({message:"Couldn't process the file"})
+            }
+        } catch (error) {
+            console.error(error);
+            if (error?.response) {
+                console.log(error.response?.status);
+                return res
+                    .status(error.response?.status)
+                    .send(error.response?.data.error);
+            } else if (error?.request) {
+                return res.status(500).send(error.request);
+            } else {
+                res.status(500).send(error.message);
+            }
+        }
     }
 );
 //Route request to the Processing service
