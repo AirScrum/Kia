@@ -38,15 +38,15 @@ require("./resources/UserStory/UserStory.router")(app);
 const dbURI = process.env.MONGO_DB_URI;
 
 mongoose
-  .connect(process.env.MONGO_DB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then((result) => {
-    app.listen(process.env.PORT || 4000);
-    console.log(`Kia API Gateway listening on port ${process.env.PORT}`);
-  })
-  .catch((err) => console.log(err));
+    .connect(process.env.MONGO_DB_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
+    .then((result) => {
+        app.listen(process.env.PORT || 4000);
+        console.log(`Kia API Gateway listening on port ${process.env.PORT}`);
+    })
+    .catch((err) => console.log(err));
 /**
  *
  * Other Routes
@@ -54,48 +54,76 @@ mongoose
  */
 // Proxy request
 app.get("/", (req, res, next) => {
-  userServiceProxy(req, res, next);
+    userServiceProxy(req, res, next);
 });
 /**
  * Converting speech to text, first upload file to convert it to array of buffer and send it to speech to text service. And authenticate user to get user id
  */
 app.post(
-  "/request/speech2text",
-  upload.single("file"),
-  passport.authenticate("jwt", { session: false }),
-  (req, res, next) => {
-    const { path } = req.file;
-    const audioBuffer = fs.readFileSync(path);
-    // Prepare data to be sent to the speech to text service
-    const data = {
-      buffer: audioBuffer,
-      userid: req.user._id,
-    };
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-    // delete the uploaded file
-    fs.unlinkSync(path);
-    // Send the request using axios
-    axios
-      .post(process.env.SPEECH2TEXT_URL + "request/speech2text", data, config)
-      .then((response) => {
-        /**
-         *
-         * Todo, send a request to the processing service to begin processing
-         *
-         */
-        console.log(response.data);
-        return res.status(200).send({ sucess: "true" });
-      })
-      .catch((error) => {
-        return res.status(500).send(error);
-      });
-  }
+    "/request/speech2text",
+    upload.single("file"),
+    passport.authenticate("jwt", { session: false }),
+    (req, res, next) => {
+        const { path } = req.file;
+        const audioBuffer = fs.readFileSync(path);
+        // Prepare data to be sent to the speech to text service
+        const data = {
+            buffer: audioBuffer,
+            userid: req.user._id,
+        };
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        };
+        // delete the uploaded file
+        fs.unlinkSync(path);
+        // Send the request using axios
+        axios
+            .post(
+                process.env.SPEECH2TEXT_URL + "request/speech2text",
+                data,
+                config
+            )
+            .then((response) => {
+                /**
+                 *
+                 * Todo, send a request to the processing service to begin processing
+                 *
+                 */
+                if(response.data?.id){
+                  axios
+                    .post(
+                        process.env.PROCESSING_URL,
+                        {
+                            textID: response.data.id,
+                        },
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    )
+                    .then((response) => {
+                        /**
+                         *
+                         * Todo, send a request to the processing service to begin processing
+                         *
+                         */
+                        console.log(response.data);
+                    })
+                    .catch((error) => {
+                        return res.status(500).send(error);
+                    });
+                }
+                return res.status(200).send({ sucess: "true" });
+            })
+            .catch((error) => {
+                return res.status(500).send(error);
+            });
+    }
 );
 //Route request to the Processing service
 app.post("/request/process", (req, res, next) => {
-  userServiceProxy2(req, res, next);
+    userServiceProxy2(req, res, next);
 });
