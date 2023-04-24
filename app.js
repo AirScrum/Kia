@@ -107,14 +107,13 @@ app.post(
         } catch (error) {
             console.error(error);
             if (error?.response) {
-                console.log(error.response?.status);
                 return res
                     .status(error.response?.status)
                     .send(error.response?.data.error);
             } else if (error?.request) {
-                return res.status(500).send(error.request);
+                return res.status(500).json({success:"False", error:error.toJSON()});
             } else {
-                res.status(500).send(error.message);
+                return res.status(500).send(error.message);
             }
         }
     }
