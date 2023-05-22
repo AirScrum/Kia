@@ -38,19 +38,12 @@ require("./resources/User/user.router")(app);
 require("./resources/GoogleAuth/GoogleAuth.router")(app);
 require("./resources/UserStory/UserStory.router")(app);
 // require("./resources/Text/text.router")(app);
-//To connect to database
-const dbURI = process.env.MONGO_DB_URI;
 
 
-
-try { const files = fs.readdirSync('/etc/ssl/certs/airscrum.me'); console.log('Files:', files); } catch (err) { console.error('Error reading directory:', err); }
+// To make the server listen to HTTPS
 
 const privateKeyPath = path.join('/etc/ssl/certs/airscrum.me', 'privkey3.pem');
 const fullChainPath = path.join('/etc/ssl/certs/airscrum.me', 'fullchain3.pem');
-
-
-
-
 const sslOptions = {
   key: fs.readFileSync(privateKeyPath),
   cert: fs.readFileSync(fullChainPath),
@@ -59,6 +52,7 @@ const sslOptions = {
 // Create HTTPS server
 const server = https.createServer(sslOptions, app);
 
+//To connect to database
 mongoose
     .connect(process.env.MONGO_DB_URI, {
         useNewUrlParser: true,
@@ -66,6 +60,7 @@ mongoose
     })
     .then((result) => {
         server.listen(process.env.PORT || 4000);
+        //app.listen(process.env.PORT || 4000);
         console.log(`Kia API Gateway listening on port ${process.env.PORT}`);
     })
     .catch((err) => console.log(err));
