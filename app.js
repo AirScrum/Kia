@@ -12,6 +12,10 @@ const session = require("express-session");
 const multer = require("multer");
 const fs = require("fs");
 const morgan = require("morgan");
+
+const https = require("https");
+const path = require('path');
+
 // Instances
 const app = express();
 const userServiceProxy = httpProxy("http://localhost:4001/");
@@ -37,13 +41,31 @@ require("./resources/UserStory/UserStory.router")(app);
 //To connect to database
 const dbURI = process.env.MONGO_DB_URI;
 
+
+
+try { const files = fs.readdirSync('/etc/ssl/certs/airscrum.me'); console.log('Files:', files); } catch (err) { console.error('Error reading directory:', err); }
+
+const privateKeyPath = path.join('/etc/ssl/certs/airscrum.me', 'privkey3.pem');
+const fullChainPath = path.join('/etc/ssl/certs/airscrum.me', 'fullchain3.pem');
+
+
+
+
+const sslOptions = {
+  key: fs.readFileSync(privateKeyPath),
+  cert: fs.readFileSync(fullChainPath),
+};
+
+// Create HTTPS server
+const server = https.createServer(sslOptions, app);
+
 mongoose
     .connect(process.env.MONGO_DB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     })
     .then((result) => {
-        app.listen(process.env.PORT || 4000);
+        server.listen(process.env.PORT || 4000);
         console.log(`Kia API Gateway listening on port ${process.env.PORT}`);
     })
     .catch((err) => console.log(err));
@@ -122,3 +144,4 @@ app.post(
 app.post("/request/process", (req, res, next) => {
     userServiceProxy2(req, res, next);
 });
+
