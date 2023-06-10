@@ -348,7 +348,7 @@ const deleteMeeting = async (req, res, next) => {
     console.log(req.params.meetingID);
     const meetingID = req.params.meetingID;
     const response = await axios.delete(
-      `${process.env.USER_MANAGEMENT_URL}api/texts/${meetingID}/`
+      `${process.env.USER_MANAGEMENT_URL}api/texts/id/${meetingID}/`
     );
     console.log(response.data);
     if (response.status === 200) {
