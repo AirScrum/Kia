@@ -1,6 +1,5 @@
 //Requires
 const express = require("express");
-const httpProxy = require("express-http-proxy");
 var cors = require("cors");
 const mongoose = require("mongoose");
 var axios = require("axios").default;
@@ -18,16 +17,22 @@ const path = require('path');
 
 // Instances
 const app = express();
-const userServiceProxy = httpProxy("http://localhost:4001/");
-const userServiceProxy2 = httpProxy("http://localhost:4002/");
 
-// Middlewares
+/*
+ * Middlewares used
+*/
+// Logging HTTP requests, each prints request method, URL, response status, and response time. 
 app.use(morgan("combined"));
+// Enables session management to encrypt and sign session data 
 app.use(session({ secret: process.env.EXPRESS_SECRET }));
+// Cross-Origin Resource Sharing (CORS). It enables clients from other domains to access your API
 app.use(cors());
+// Parse URL-encoded data in incoming requests.
 app.use(express.urlencoded({ extended: true }));
+// Initializes the Passport.js library and sets it up for authentication.
 app.use(passport.initialize());
 app.use(passport.session());
+// Parsing incoming JSON data in requests. 
 app.use(express.json());
 
 // Define the storage location and filename of uploaded file
@@ -69,10 +74,7 @@ mongoose
  * Other Routes
  *
  */
-// Proxy request
-app.get("/", (req, res, next) => {
-    userServiceProxy(req, res, next);
-});
+
 /**
  * Converting speech to text, first upload file to convert it to array of buffer and send it to speech to text service. And authenticate user to get user id
  */
@@ -135,8 +137,4 @@ app.post(
         }
     }
 );
-//Route request to the Processing service
-app.post("/request/process", (req, res, next) => {
-    userServiceProxy2(req, res, next);
-});
 
